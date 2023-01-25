@@ -80,6 +80,7 @@ export default function Home() {
       const txn = await nftContract.startPresale();
       setLoading(true);
       await txn.wait();
+      console.log(txn);
       setLoading(false);
       setPresaleStarted(true);
       await checkIfPresaleStarted();
@@ -119,6 +120,7 @@ export default function Home() {
       );
 
       const isPresaleStarted = await nftContract.presaleStarted();
+      console.log(isPresaleStarted);
       setPresaleStarted(isPresaleStarted);
       return isPresaleStarted;
     } catch (err) {
@@ -144,6 +146,7 @@ export default function Home() {
       const signer = web3Provider.getSigner();
       return signer;
     }
+    return web3Provider;
   };
 
   const onPageLoad = async () => {
