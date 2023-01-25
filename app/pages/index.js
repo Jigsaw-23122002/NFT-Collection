@@ -10,10 +10,28 @@ export default function Home() {
   const [presaleStarted, setPresaleStarted] = useState(false);
   const [presaleEnded, setPresaleEnded] = useState(false);
   const [walletConnected, setWalletConnected] = useState(false);
+  const [numTokensMinted, setNumTokensMinted] = useState("");
   const [loading, setLoading] = useState(false);
   const web3ModalRef = useRef();
 
+  const getNumMintedTokens = async () => {
+    try {
+      const provider = await getProviderOrSigner();
+
+      const nftContract = new Contract(
+        NFT_CONTRACT_ADDRESS,
+        NFT_CONTRACT_ABI,
+        provider
+      );
+      const numTokenIds = await nftContract.tokenIds();
+      setNumTokensMinted(numTokenIds.toString());
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const presaleMint = async () => {
+    setLoading(true);
     try {
       const signer = await getProviderOrSigner(true);
 
@@ -30,9 +48,11 @@ export default function Home() {
     } catch (err) {
       console.error(err);
     }
+    setLoading(false);
   };
 
   const publicMint = async () => {
+    setLoading(true);
     try {
       const signer = await getProviderOrSigner(true);
 
@@ -49,6 +69,7 @@ export default function Home() {
     } catch (err) {
       console.error(err);
     }
+    setLoading(false);
   };
 
   const getOwner = async () => {
@@ -70,6 +91,7 @@ export default function Home() {
   };
 
   const startPresale = async () => {
+    setLoading(true);
     try {
       const signer = await getProviderOrSigner(true);
       const nftContract = new Contract(
@@ -87,6 +109,7 @@ export default function Home() {
     } catch (err) {
       console.error(err);
     }
+    setLoading(false);
   };
 
   const checkIfPresaleEnded = async () => {
@@ -156,6 +179,19 @@ export default function Home() {
     if (presaleStarted) {
       await checkIfPresaleEnded();
     }
+
+    await getNumMintedTokens();
+
+    setInterval(async () => {
+      await getNumMintedTokens();
+    }, 5 * 1000);
+
+    setInterval(async () => {
+      const presaleStarted = await checkIfPresaleStarted();
+      if (presaleStarted) {
+        await checkIfPresaleEnded();
+      }
+    }, 5 * 1000);
   };
 
   useEffect(() => {
@@ -211,7 +247,7 @@ export default function Home() {
         </div>
       );
     }
-    if (presaleEnded) {
+    if (presaleEnded && presaleEnded) {
       return (
         <div>
           <span className={styles.description}>
@@ -235,9 +271,12 @@ export default function Home() {
       <div className={styles.main}>
         <div>
           <h1 className={styles.title}>Welcome to CryptoDevs NFT</h1>
-          <span className={styles.description}>
+          <div className={styles.description}>
             CryptoDevs NFT is a collection for developers in web3
-          </span>
+          </div>
+          <div className={styles.description}>
+            {numTokensMinted}/20 have been minted already!
+          </div>
           {renderBody()}
         </div>
         <img className={styles.image} src="/cryptodevs/crypto-devs.svg" />
